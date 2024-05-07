@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sales Data Entry</title>
+</head>
+<body>
+    <div class="container">
+        <h2>Sales Data Entry</h2>
+        <form id="salesForm">
+            <!-- Customer Details -->
+            <div class="customer-details">
+                <h3>Customer Details</h3>
+                <div class="form-group">
+                    <label for="customerName">Customer Name:</label>
+                    <input type="text" id="customerName" name="customerName">
+                </div>
+                <div class="form-group">
+                    <label for="customerAddress">Customer Address:</label>
+                    <textarea id="customerAddress" name="customerAddress" rows="4"></textarea>
+                </div>
+            </div>
+
+            <!-- Sales Entry -->
+            <div class="entry-box">
+                <h3>Sales Entry</h3>
+                <div class="form-group">
+                    <label for="date">Date:</label>
+                    <input type="text" id="date" name="date">
+                </div>
+                <div class="form-group">
+                    <label for="productType">Product Type:</label>
+                    <select id="productType" name="productType" onchange="updateVarieties()">
+                        <option value="Parking Tiles">Parking Tiles</option>
+                        <option value="Paver Blocks">Paver Blocks</option>
+                        <option value="Kurbstone">Kurbstone</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="productVariety">Product Variety:</label>
+                    <select id="productVariety" name="productVariety">
+                        <!-- Options will be populated dynamically based on product type selection -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="quantity">Quantity:</label>
+                    <input type="text" id="quantity" name="quantity">
+                </div>
+            </div>
+            
+            <!-- Add more entries here (if needed) -->
+            
+            <button type="button" onclick="generateExcel()">Generate Excel</button>
+        </form>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/blob-polyfill/2.1.2/Blob.min.js"></script>
+    <script>
+        // Define product varieties based on product type
+        const productVarieties = {
+            'Parking Tiles': ['FOUR PLUS', 'NINE BOX', 'FOOT BALL', 'SQUARE BUTTON', 'SIX ROUND', 'BADAL', 'NEW DESIGN'],
+            'Paver Blocks': ['ZIG ZAG', 'DUMBLE', 'GRASS PAVER'],
+            'Kurbstone': ['1st', '2nd', '3rd', '4th', '5th', '6th']
+            // Add more product types and varieties as needed
+        };
+
+        // Function to update product varieties based on selected product type
+        function updateVarieties() {
+            const selectedProductType = document.getElementById('productType').value;
+            const productVarietySelect = document.getElementById('productVariety');
+
+            // Clear existing options
+            productVarietySelect.innerHTML = '';
+
+            // Populate with options based on selected product type
+            for (const variety of productVarieties[selectedProductType]) {
+                const option = document.createElement('option');
+                option.text = variety;
+                productVarietySelect.add(option);
+            }
+        }
+
+        // Function to generate and download Excel file
+        function generateExcel() {
+            const customerName = document.getElementById('customerName').value;
+            const customerAddress = document.getElementById('customerAddress').value;
+            const date = document.getElementById('date').value;
+            const productType = document.getElementById('productType').value;
+            const productVariety = document.getElementById('productVariety').value;
+            const quantity = document.getElementById('quantity').value;
+
+            // Create a data array for the Excel file
+            const data = [
+                ["Customer Name", "Customer Address", "Date", "Product Type", "Product Variety", "Quantity"],
+                [customerName, customerAddress, date, productType, productVariety, quantity]
+            ];
+
+            // Create a new workbook
+            const wb = XLSX.utils.book_new();
+
+            // Create a worksheet
+            const ws = XLSX.utils.aoa_to_sheet(data);
+
+            // Add the worksheet to the workbook
+            XLSX.utils.book_append_sheet(wb, ws, "Sales Data");
+
+            // Generate the Excel file as a blob
+            const blob = XLSX.write(wb, { bookType: "xlsx", type: "blob" });
+
+            // Create a URL for the blob
+            const url = window.URL.createObjectURL(blob);
+
+            // Create a link element to trigger the download
+            const a = document.createElement("a");
+            a.style.display = "none";
+            a.href = url;
+            a.download = "sales_data.xlsx";
+
+            // Trigger the download
+            document.body.appendChild(a);
+            a.click();
+
+            // Clean up
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Call the updateVarieties function initially to populate the first entry
+        updateVarieties();
+    </script>
+</body>
+</html>
